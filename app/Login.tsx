@@ -6,24 +6,23 @@ import {
     TextInput,
     TouchableOpacity,
     ImageBackground,
-    Alert, // Import Alert for displaying messages
-    ActivityIndicator, // Added for a visual loading indicator
+    Alert,
+    ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import tw from 'twrnc';
-import auth from './Components/firebaseConfig'; // Adjust path to your firebaseConfig.js
+import auth from './Components/firebaseConfig';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'expo-router';
 
-
-const backgroundImage = require('../assets/images/image1.jpg'); // Your actual image
+const backgroundImage = require('../assets/images/image1.jpg');
 
 const LoginScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(false); // To manage loading state
+    const [loading, setLoading] = useState(false);
 
-    const router = useRouter(); // Initialize the router for navigation
+    const router = useRouter();
 
     const handleLogin = async () => {
         if (!email || !password) {
@@ -31,28 +30,23 @@ const LoginScreen = () => {
             return;
         }
 
-        setLoading(true); // Start loading
+        setLoading(true);
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
             console.log("User logged in:", user.email);
-            // Alert.alert("Success", "Logged in successfully!"); // Optional: show success message
-
-            // Navigate to the Home screen after successful login
-            router.replace('/Home'); // Use replace to prevent going back to login screen
+            router.replace('/Home');
         } catch (error) {
             let errorMessage = "An unknown error occurred.";
-
-            // Attempt to cast error to FirebaseError or check for common properties
-            const firebaseError = error;
+            const firebaseError = error as { code?: string; message?: string };
 
             if (
                 typeof firebaseError === 'object' &&
                 firebaseError !== null &&
                 'code' in firebaseError &&
-                typeof (firebaseError as any).code === 'string'
+                typeof firebaseError.code === 'string'
             ) {
-                switch ((firebaseError as any).code) {
+                switch (firebaseError.code) {
                     case 'auth/invalid-email':
                         errorMessage = "That email address is invalid.";
                         break;
@@ -66,20 +60,20 @@ const LoginScreen = () => {
                         errorMessage = "Incorrect password. Please try again.";
                         break;
                     default:
-                        errorMessage = (firebaseError as any).message || errorMessage;
+                        errorMessage = firebaseError.message || errorMessage;
                 }
             } else if (
                 typeof firebaseError === 'object' &&
                 firebaseError !== null &&
                 'message' in firebaseError &&
-                typeof (firebaseError as any).message === 'string'
+                typeof firebaseError.message === 'string'
             ) {
-                errorMessage = (firebaseError as any).message;
+                errorMessage = firebaseError.message;
             }
             Alert.alert("Login Error", errorMessage);
             console.error("Login error:", error);
         } finally {
-            setLoading(false); // End loading
+            setLoading(false);
         }
     };
 
@@ -96,7 +90,6 @@ const LoginScreen = () => {
                 ]}
                 resizeMode="cover"
             >
-                {/* Optional spacing from top if needed */}
                 <View style={tw`flex-1 justify-end w-full`}>
                     <View
                         style={[
@@ -111,10 +104,9 @@ const LoginScreen = () => {
                         <Text style={tw`text-center text-xl font-bold mb-1`}>Log in</Text>
                         <Text style={tw`text-center text-gray-600 mb-6`}>
                             Don’t have an account?{' '}
-                            <Text style={tw`text-black font-semibold`}>
-                                {/* Ensure '/SignUp' or '/Register' matches your expo-router file structure */}
-                                <Link href="/SignUp">Register</Link>
-                            </Text>
+                            <Link href="/SignUp">
+                                <Text style={tw`text-black font-semibold`}>Register</Text>
+                            </Link>
                         </Text>
 
                         <TextInput
@@ -125,7 +117,7 @@ const LoginScreen = () => {
                             autoCapitalize="none"
                             onChangeText={setEmail}
                             value={email}
-                            editable={!loading} // Disable input when loading
+                            editable={!loading}
                         />
 
                         <TextInput
@@ -135,16 +127,16 @@ const LoginScreen = () => {
                             secureTextEntry
                             onChangeText={setPassword}
                             value={password}
-                            editable={!loading} // Disable input when loading
+                            editable={!loading}
                         />
 
                         <TouchableOpacity
                             style={tw`bg-teal-700 rounded-lg py-4 ${loading ? 'opacity-50' : ''}`}
                             onPress={handleLogin}
-                            disabled={loading} // Disable button when loading
+                            disabled={loading}
                         >
                             {loading ? (
-                                <ActivityIndicator color="#fff" /> // Show spinner when loading
+                                <ActivityIndicator color="#fff" />
                             ) : (
                                 <Text style={tw`text-white text-center font-semibold text-base`}>
                                     Log In

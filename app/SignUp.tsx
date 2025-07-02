@@ -1,97 +1,123 @@
-import { Entypo, Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import React, { useState } from 'react';
 import {
     View,
     Text,
     TextInput,
-    Image,
-    ScrollView,
     TouchableOpacity,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import tw from 'twrnc';
-import Footer from './Components/Footer';
+import auth from './Components/firebaseConfig'; // Adjust path if needed
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { Link } from 'expo-router';
 
-export default function CommunityScreen() {
+export default function RegisterScreen() {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const handleRegister = async () => {
+        if (!email || !password) {
+            Alert.alert("Error", "Please enter both email and password.");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            Alert.alert("Success", "Account created successfully!");
+            console.log("User registered:", user.email);
+        } catch (error) {
+            let errorMessage = "An unknown error occurred.";
+            if (typeof error === 'object' && error !== null && 'code' in error) {
+                const firebaseError = error;
+                switch (firebaseError.code) {
+                    case 'auth/email-already-in-use':
+                        errorMessage = "That email address is already in use!";
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage = "That email address is invalid.";
+                        break;
+                    case 'auth/operation-not-allowed':
+                        errorMessage = "Email/password accounts are not enabled.";
+                        break;
+                    case 'auth/weak-password':
+                        errorMessage = "Password is too weak.";
+                        break;
+                    default:
+                        errorMessage = (firebaseError as any).message;
+                }
+            } else if (typeof error === 'object' && error !== null && 'message' in error) {
+                errorMessage = (error as { message: string }).message;
+            }
+            Alert.alert("Registration Error", errorMessage);
+            console.error("Registration error:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <SafeAreaView style={tw`flex-1 bg-white`}>
-            <View style={tw`flex-1`}>
-                {/* Scrollable Content */}
-                <ScrollView
-                    style={tw`flex-1`}
-                    contentContainerStyle={tw`p-4 pb-20`} // Leave space above footer
-                    showsVerticalScrollIndicator={false}
-                >
-                    {/* Header */}
-                    <View style={tw`flex-row justify-between items-center px-4 py-3 mb-4`}>
-                        <Entypo name="menu" size={24} color="black" />
-                        <Text style={tw`text-lg font-semibold`}>Community</Text>
-                        <Ionicons name="notifications-outline" size={24} color="black" />
-                    </View>
-
-                    {/* Post Input */}
-                    <TextInput
-                        placeholder="Write your post here"
-                        style={tw`border border-teal-800 rounded-xl p-3 mb-4 min-h-16`}
-                        multiline
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                style={tw`flex-1`}
+            >
+                {/* Logo */}
+                <View style={tw`items-center mt-10`}>
+                    <Image
+                        source={require('../assets/icons/icon1.jpg')}
+                        style={{ width: 180, height: 100, resizeMode: 'contain' }}
                     />
+                </View>
 
-                    {/* Images Row */}
-                    <View style={tw`flex-row justify-between mt-6 mb-4`}>
-                        <Image
-                            style={tw`w-24 h-32 rounded-xl`}
-                            source={require('../assets/images/image3.png')}
-                        />
-                        <Image
-                            style={tw`w-24 h-32 rounded-xl`}
-                            source={require('../assets/images/image4.png')}
-                        />
-                        <Image
-                            style={tw`w-24 h-32 rounded-xl`}
-                            source={require('../assets/images/image5.png')}
-                        />
-                    </View>
-
-                    {/* User Info */}
-                    <View style={tw`flex-row items-center mt-6 mb-2`}>
-                        <View style={tw`w-12 h-12 bg-gray-300 rounded-full mr-3`} />
-                        <Text style={tw`font-bold text-base`}>Mai Shalom</Text>
-                    </View>
-
-                    {/* Description */}
-                    <Text style={tw`text-gray-800 text-sm mb-4`}>
-                        Find solutions to your pregnancy complications{"\n"}
-                        Connect with other mothers{"\n"}
-                        Get loan to assist you in your pregnancy{"\n"}
-                        Record your child moments
+                {/* Form */}
+                <View style={tw`flex-1 items-center justify-center px-6`}>
+                    <Text style={tw`text-base text-gray-600 mt-6`}>Create an account</Text>
+                    <Text style={tw`text-sm text-gray-500 mb-6`}>
+                        Already have an account?{' '}
+                        <Link href="/Login">
+                            <Text style={tw`text-lg text-black`}>Log in</Text>
+                        </Link>
                     </Text>
 
-                    {/* Bottom Image */}
-                    <Image
-                        style={tw`w-full h-56 rounded-2xl mt-4`}
-                        source={require('../assets/images/image6.jpg')}
-                        resizeMode="cover"
+                    <TextInput
+                        placeholder="Enter your email"
+                        placeholderTextColor="#999"
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                        value={email}
+                        onChangeText={setEmail}
+                        style={tw`w-full border rounded-xl border-teal-800 p-3 mb-4 text-sm`}
                     />
-
-                    {/* Reactions */}
-                    <View style={tw`flex-row justify-around items-center mt-6`}>
-                        <TouchableOpacity>
-                            <Text style={tw`text-xl`}>👍</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity>
-                            <Text style={tw`text-xl`}>💬</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity>
-                            <Text style={tw`text-xl`}>↗️</Text>
-                        </TouchableOpacity>
-                    </View>
-                </ScrollView>
-
-                {/* Sticky Footer */}
-                <View style={tw`absolute bottom-0 left-0 right-0`}>
-                    <Footer />
+                    <TextInput
+                        placeholder="Password"
+                        placeholderTextColor="#999"
+                        secureTextEntry
+                        value={password}
+                        onChangeText={setPassword}
+                        style={tw`w-full border rounded-xl border-teal-800 p-3 mb-6 text-sm`}
+                    />
                 </View>
-            </View>
+
+                {/* Register Button */}
+                <View style={tw`px-6 pb-8`}>
+                    <TouchableOpacity
+                        style={tw`w-full bg-teal-800 py-4 rounded-xl ${loading ? 'opacity-50' : ''}`}
+                        onPress={handleRegister}
+                        disabled={loading}
+                    >
+                        <Text style={tw`text-white text-center`}>
+                            {loading ? 'Registering...' : 'Register'}
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            </KeyboardAvoidingView>
         </SafeAreaView>
     );
 }
