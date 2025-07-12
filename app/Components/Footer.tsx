@@ -5,6 +5,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { Link } from 'expo-router';
 
+
 export default function FeatureBar() {
     return (
         <View style={tw`w-full`}>
@@ -34,6 +35,13 @@ export default function FeatureBar() {
                     <TouchableOpacity style={tw`items-center w-1/5`}>
                         <FontAwesome5 name="money-check-alt" size={26} color="white" />
                         <Text style={tw`text-white text-xs mt-2 text-center`}>Maternal loans</Text>
+                    </TouchableOpacity>
+                </Link>
+                {/* FIX: Added missing closing </Link> tag here */}
+                <Link href='/AppStatus' asChild>
+                    <TouchableOpacity style={tw`items-center w-1/5`}>
+                        <MaterialCommunityIcons name="account-check-outline" size={26} color="white" />
+                        <Text style={tw`text-white text-xs mt-2 text-center`}>Appointment Status</Text>
                     </TouchableOpacity>
                 </Link>
             </View>

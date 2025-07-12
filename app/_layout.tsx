@@ -13,6 +13,10 @@ export default function RootLayout() {
     <Stack.Screen name="Loans" options={{ headerShown: false }} />
     <Stack.Screen name="Message" options={{ headerShown: false }} />
     <Stack.Screen name="Chiremba" options={{ headerShown: false }} />
+    <Stack.Screen name="BookAppointment" options={{ headerShown: false }} />
+    <Stack.Screen name="AppStatus" options={{ headerShown: false }} />
+
+    <Stack.Screen name="Applyloan" options={{ headerShown: false }} />
 
   </Stack >
 }

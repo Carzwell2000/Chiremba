@@ -1,11 +1,19 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
+    "types": [
+      "@react-native-community/datetimepicker"
+    ],
+    "jsx": "react-jsx", // This is usually inherited from "expo/tsconfig.base" but explicitly setting it can't hurt.
     "strict": true,
+    "baseUrl": "./", // If you want to use path aliases like '~/'
     "paths": {
+      "~/*": [
+        "./*"
+      ], // Example path alias
       "@/*": [
         "./*"
-      ]
+      ] // Common alias for app root
     }
   },
   "include": [

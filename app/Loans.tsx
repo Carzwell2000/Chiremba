@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TextInput, Image, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, ScrollView, TouchableOpacity } from 'react-native';
+import { Link } from 'expo-router';
 import tw from 'twrnc';
 import Footer from './Components/Footer'; // Adjust the path as necessary
 
@@ -19,7 +20,7 @@ export default function LoansScreen() {
             {/* Search Bar */}
             <View style={tw`px-4 mt-4`}>
                 <TextInput
-                    placeholder=""
+                    placeholder="Search microfinance..."
                     style={tw`border border-gray-400 rounded-xl h-12 px-4`}
                 />
             </View>
@@ -28,7 +29,7 @@ export default function LoansScreen() {
             <Text style={tw`font-bold text-base px-4 mt-5`}>Micro Finances</Text>
 
             {/* Loan Options */}
-            <ScrollView style={tw`px-4 mt-2`}>
+            <ScrollView style={tw`px-4 mt-2 mb-20`}>
                 {/* First Loan Option */}
                 <View style={tw`flex-row items-center justify-between mb-4`}>
                     <View style={tw`flex-row items-center`}>
@@ -39,9 +40,9 @@ export default function LoansScreen() {
                             <Text style={tw`text-xs text-blue-500`}>View profile</Text>
                         </View>
                     </View>
-                    <TouchableOpacity style={tw`bg-[#03383f] px-4 py-2 rounded-xl`}>
+                    <Link href='/Applyloan' style={tw`bg-[#03383f] px-4 py-2 rounded-xl`}>
                         <Text style={tw`text-white text-sm`}>Apply for loan</Text>
-                    </TouchableOpacity>
+                    </Link>
                 </View>
 
                 {/* Second Loan Option */}
@@ -53,9 +54,9 @@ export default function LoansScreen() {
                             <Text style={tw`text-xs text-gray-500`}>View profile</Text>
                         </View>
                     </View>
-                    <TouchableOpacity style={tw`bg-[#03383f] px-4 py-2 rounded-xl`}>
+                    <Link href='/Applyloan' style={tw`bg-[#03383f] px-4 py-2 rounded-xl`}>
                         <Text style={tw`text-white text-sm`}>Apply for loan</Text>
-                    </TouchableOpacity>
+                    </Link>
                 </View>
             </ScrollView>
 
