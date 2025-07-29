@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, ActivityIndicator } from 'react-native';
 import tw from 'twrnc';
 import { createClient } from '@supabase/supabase-js';
+import auth from './Components/firebaseConfig';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 // Setup Supabase client
 const supabaseUrl = "https://erpuslyknuetnqlehynl.supabase.co";
@@ -9,66 +11,91 @@ const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Define Appointment type to include timestamp and formattedTime/formattedDate
+// Define type
 type Appointment = {
     patient_name: string;
     status: string;
-    appointment_timestamp?: string; // Original timestamp from DB
-    formattedTime?: string; // Formatted time string (e.g., "02:30 PM")
-    formattedDate?: string; // Formatted date string (e.g., "July 11, 2025")
+    appointment_timestamp?: string;
+    formattedTime?: string;
+    formattedDate?: string;
 };
 
 const AppointmentStatusFetcher = () => {
     const [appointmentsData, setAppointmentsData] = useState<Appointment[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [userId, setUserId] = useState<string | null>(null);
+
+    // Track Firebase user
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                setUserId(user.uid);
+            } else {
+                setUserId(null);
+            }
+        });
+
+        return () => unsubscribe();
+    }, []);
 
     useEffect(() => {
-        const fetchAppointmentStatusAndPatientNames = async () => {
+        const fetchAppointmentStatus = async () => {
+            if (!userId) return; // Don't fetch if user is not logged in
+
             setLoading(true);
             setError(null);
 
-            // Ensure 'appointment_timestamp' is selected from your Supabase table
             const { data, error } = await supabase
                 .from('Appointments')
-                .select('patient_name, status, appointment_timestamp') // <<< --- Make sure timestamp is fetched!
+                .select('patient_name, status, appointment_timestamp')
+                .eq('user_id', userId) // ✅ Filter by logged-in user
                 .order('appointment_timestamp', { ascending: true });
 
             if (error) {
                 console.error('Error fetching appointment data:', error);
-                setError('Failed to fetch appointment data. Please try again.');
+                setError('Failed to fetch appointments.');
             } else {
-                // Format the data to include readable time and date
-                const formattedData = data ? data.map(appt => {
+                const formattedData = data.map(appt => {
                     let formattedTime = '';
-                    let formattedDateDisplay = ''; // Initialize formattedDateDisplay
+                    let formattedDateDisplay = '';
+
                     if (appt.appointment_timestamp) {
                         const dateObj = new Date(appt.appointment_timestamp);
-                        formattedTime = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+                        formattedTime = dateObj.toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: true
+                        });
 
-                        // Format the date without the weekday
                         formattedDateDisplay = dateObj.toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'long',
                             day: 'numeric',
                         });
                     }
+
                     return {
                         ...appt,
-                        formattedTime: formattedTime, // Store formatted time
-                        formattedDate: formattedDateDisplay, // Store formatted date
+                        formattedTime,
+                        formattedDate: formattedDateDisplay,
                     };
-                }) : [];
+                });
+
                 setAppointmentsData(formattedData);
             }
+
             setLoading(false);
         };
 
-        fetchAppointmentStatusAndPatientNames();
-    }, []); // Empty dependency array means this effect runs once on mount
+        if (userId) {
+            fetchAppointmentStatus();
+        }
+    }, [userId]); // Fetch when userId becomes available
 
     return (
         <ScrollView style={tw`flex-1 bg-white px-4 pt-6`}>
-            <Text style={tw`text-2xl font-bold text-gray-800 mb-4`}>Patient Appointment Statuses</Text>
+            <Text style={tw`text-2xl font-bold text-gray-800 mb-4`}>Your Appointments</Text>
 
             {loading && <ActivityIndicator size="large" color="#0f766e" />}
             {error && <Text style={tw`text-red-600 mt-4`}>Error: {error}</Text>}
@@ -88,20 +115,19 @@ const AppointmentStatusFetcher = () => {
                                     <Text
                                         style={tw.style(
                                             'text-xs font-semibold px-2 py-1 rounded-full',
-                                            // Apply status-based colors
                                             appointment.status === 'Confirmed'
                                                 ? 'bg-green-100 text-green-800'
                                                 : appointment.status === 'Pending'
                                                     ? 'bg-yellow-100 text-yellow-800'
                                                     : appointment.status === 'Rescheduled'
-                                                        ? 'bg-blue-100 text-blue-800' // Added blue for Rescheduled
-                                                        : 'bg-red-100 text-red-800' // Default for 'Cancelled' or other
+                                                        ? 'bg-blue-100 text-blue-800'
+                                                        : 'bg-red-100 text-red-800'
                                         )}
                                     >
                                         {appointment.status}
                                     </Text>
-                                    {/* Display scheduled date and time if status is 'Confirmed' or 'Rescheduled' */}
-                                    {(appointment.status === 'Confirmed' || appointment.status === 'Rescheduled') && appointment.formattedTime && appointment.formattedDate && (
+
+                                    {(appointment.status === 'Confirmed' || appointment.status === 'Rescheduled') && appointment.formattedDate && appointment.formattedTime && (
                                         <Text style={tw`text-xs text-gray-600 mt-1`}>
                                             on {appointment.formattedDate} at {appointment.formattedTime}
                                         </Text>

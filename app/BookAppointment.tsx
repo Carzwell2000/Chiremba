@@ -20,6 +20,9 @@ import {
 } from 'react-native';
 import tw from 'twrnc';
 import { useLocalSearchParams } from 'expo-router';
+import { onAuthStateChanged, getAuth } from 'firebase/auth';
+import auth from './Components/firebaseConfig'; // Adjust the import based on your project structure
+
 
 type FormField = 'patientName' | 'doctorName' | 'reason';
 
@@ -38,6 +41,20 @@ const BookAppointmentForm = () => {
     const [showTimePicker, setShowTimePicker] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [userId, setUserId] = useState<string | null>(null);
+
+    // Track user login state
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                setUserId(user.uid);
+            } else {
+                setUserId(null);
+            }
+        });
+
+        return () => unsubscribe();
+    }, []);
 
     useEffect(() => {
         if (doctorName) {
@@ -73,6 +90,12 @@ const BookAppointmentForm = () => {
             return;
         }
 
+        if (!userId) {
+            Alert.alert('Error', 'User not authenticated.');
+            setLoading(false);
+            return;
+        }
+
         try {
             const combinedDateTime = new Date(
                 appointmentDate.getFullYear(),
@@ -89,6 +112,7 @@ const BookAppointmentForm = () => {
                 appointment_timestamp: combinedDateTime.toISOString(),
                 reason: formData.reason,
                 status: 'pending',
+                user_id: userId,
             };
 
             const { error: supabaseError } = await supabase
@@ -117,7 +141,6 @@ const BookAppointmentForm = () => {
 
             {error && <Text style={tw`text-red-500 mb-3 text-center`}>{error}</Text>}
 
-            {/* Patient Name */}
             <Text style={tw`text-sm font-medium text-gray-700 mb-1`}>Patient Name</Text>
             <TextInput
                 value={formData.patientName}
@@ -127,7 +150,6 @@ const BookAppointmentForm = () => {
                 style={tw`border border-gray-300 rounded px-4 py-2 mb-4 bg-white`}
             />
 
-            {/* Doctor Name (read-only) */}
             <Text style={tw`text-sm font-medium text-gray-700 mb-1`}>Doctor Name</Text>
             <TextInput
                 value={formData.doctorName}
@@ -135,7 +157,6 @@ const BookAppointmentForm = () => {
                 style={tw`border border-gray-300 rounded px-4 py-2 mb-4 bg-gray-100 text-gray-700`}
             />
 
-            {/* Appointment Date */}
             <Text style={tw`text-sm font-medium text-gray-700 mb-1`}>Appointment Date</Text>
             <TouchableOpacity
                 onPress={() => setShowDatePicker(true)}
@@ -157,7 +178,6 @@ const BookAppointmentForm = () => {
                 />
             )}
 
-            {/* Appointment Time */}
             <Text style={tw`text-sm font-medium text-gray-700 mb-1`}>Appointment Time</Text>
             <TouchableOpacity
                 onPress={() => setShowTimePicker(true)}
@@ -178,7 +198,6 @@ const BookAppointmentForm = () => {
                 />
             )}
 
-            {/* Reason */}
             <Text style={tw`text-sm font-medium text-gray-700 mb-1`}>Reason</Text>
             <TextInput
                 value={formData.reason}
@@ -191,7 +210,6 @@ const BookAppointmentForm = () => {
                 style={tw`border border-gray-300 rounded px-4 py-2 h-24 mb-4 bg-white`}
             />
 
-            {/* Submit Button */}
             <TouchableOpacity
                 onPress={handleSubmit}
                 disabled={loading}
@@ -208,3 +226,4 @@ const BookAppointmentForm = () => {
 };
 
 export default BookAppointmentForm;
+

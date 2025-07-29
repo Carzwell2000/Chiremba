@@ -1,4 +1,3 @@
-import { Link } from 'expo-router';
 import React, { useState } from 'react';
 import {
     View,
@@ -8,12 +7,17 @@ import {
     ImageBackground,
     Alert,
     ActivityIndicator,
+    KeyboardAvoidingView,
+    Platform,
+    TouchableWithoutFeedback,
+    Keyboard,
+    ScrollView
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import tw from 'twrnc';
 import auth from './Components/firebaseConfig';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { useRouter } from 'expo-router';
+import { useRouter, Link } from 'expo-router';
 
 const backgroundImage = require('../assets/images/image1.jpg');
 
@@ -79,73 +83,69 @@ const LoginScreen = () => {
 
     return (
         <SafeAreaView style={tw`flex-1`}>
-            <ImageBackground
-                source={backgroundImage}
-                style={[
-                    tw`flex-1`,
-                    {
-                        justifyContent: 'flex-start',
-                        alignItems: 'center',
-                    },
-                ]}
-                resizeMode="cover"
-            >
-                <View style={tw`flex-1 justify-end w-full`}>
-                    <View
-                        style={[
-                            tw`w-full px-6 pt-6 pb-10`,
-                            {
-                                backgroundColor: 'white',
-                                borderTopLeftRadius: 30,
-                                borderTopRightRadius: 30,
-                            },
-                        ]}
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    style={tw`flex-1`}
+                    keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+                >
+                    <ImageBackground
+                        source={backgroundImage}
+                        style={tw`flex-1`}
+                        resizeMode="cover"
                     >
-                        <Text style={tw`text-center text-xl font-bold mb-1`}>Log in</Text>
-                        <Text style={tw`text-center text-gray-600 mb-6`}>
-                            Don’t have an account?{' '}
-                            <Link href="/SignUp">
-                                <Text style={tw`text-black font-semibold`}>Register</Text>
-                            </Link>
-                        </Text>
-
-                        <TextInput
-                            style={tw`w-full border border-gray-300 rounded-lg p-3 mb-4`}
-                            placeholder="Enter your email"
-                            placeholderTextColor="#555"
-                            keyboardType="email-address"
-                            autoCapitalize="none"
-                            onChangeText={setEmail}
-                            value={email}
-                            editable={!loading}
-                        />
-
-                        <TextInput
-                            style={tw`w-full border border-gray-300 rounded-lg p-3 mb-6`}
-                            placeholder="Enter your password"
-                            placeholderTextColor="#555"
-                            secureTextEntry
-                            onChangeText={setPassword}
-                            value={password}
-                            editable={!loading}
-                        />
-
-                        <TouchableOpacity
-                            style={tw`bg-teal-700 rounded-lg py-4 ${loading ? 'opacity-50' : ''}`}
-                            onPress={handleLogin}
-                            disabled={loading}
+                        <ScrollView
+                            contentContainerStyle={tw`flex-grow justify-end`}
+                            keyboardShouldPersistTaps="handled"
                         >
-                            {loading ? (
-                                <ActivityIndicator color="#fff" />
-                            ) : (
-                                <Text style={tw`text-white text-center font-semibold text-base`}>
-                                    Log In
+                            <View style={tw`w-full px-6 pt-6 pb-10 bg-white rounded-t-3xl`}>
+                                <Text style={tw`text-center text-xl font-bold mb-1`}>Log in</Text>
+                                <Text style={tw`text-center text-gray-600 mb-6`}>
+                                    Don’t have an account?{' '}
+                                    <Link href="/SignUp">
+                                        <Text style={tw`text-black font-semibold`}>Register</Text>
+                                    </Link>
                                 </Text>
-                            )}
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </ImageBackground>
+
+                                <TextInput
+                                    style={tw`w-full border border-gray-300 rounded-lg p-3 mb-4`}
+                                    placeholder="Enter your email"
+                                    placeholderTextColor="#555"
+                                    keyboardType="email-address"
+                                    autoCapitalize="none"
+                                    onChangeText={setEmail}
+                                    value={email}
+                                    editable={!loading}
+                                />
+
+                                <TextInput
+                                    style={tw`w-full border border-gray-300 rounded-lg p-3 mb-6`}
+                                    placeholder="Enter your password"
+                                    placeholderTextColor="#555"
+                                    secureTextEntry
+                                    onChangeText={setPassword}
+                                    value={password}
+                                    editable={!loading}
+                                />
+
+                                <TouchableOpacity
+                                    style={tw`bg-teal-700 rounded-lg py-4 ${loading ? 'opacity-50' : ''}`}
+                                    onPress={handleLogin}
+                                    disabled={loading}
+                                >
+                                    {loading ? (
+                                        <ActivityIndicator color="#fff" />
+                                    ) : (
+                                        <Text style={tw`text-white text-center font-semibold text-base`}>
+                                            Log In
+                                        </Text>
+                                    )}
+                                </TouchableOpacity>
+                            </View>
+                        </ScrollView>
+                    </ImageBackground>
+                </KeyboardAvoidingView>
+            </TouchableWithoutFeedback>
         </SafeAreaView>
     );
 };

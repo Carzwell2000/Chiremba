@@ -4,7 +4,6 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = "https://erpuslyknuetnqlehynl.supabase.co";
 const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVycHVzbHlrbnVldG5xbGVoeW5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg3ODMxMDUsImV4cCI6MjA2NDM1OTEwNX0.f1ubCigkh9u2ehWPeB_j4RyB5GEC70jHbl7T8NLnRdA"; // Use full anon key
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
 import React, { useState, useEffect } from 'react';
 import {
     View,
@@ -16,18 +15,18 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, Entypo } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Link } from 'expo-router';
 import tw from 'twrnc';
-import Footer from './Components/Footer'; // Update if needed
+import Footer from './Components/Footer';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { RootStackParamList } from './navigation/types'; // Update if needed
-
+import { RootStackParamList } from './navigation/types';
 
 type Doctor = {
     id: string;
     FirstName: string;
     LastName: string;
     Specialization: string;
-
 };
 
 export default function DoctorsScreen() {
@@ -35,6 +34,7 @@ export default function DoctorsScreen() {
     const [doctors, setDoctors] = useState<Doctor[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [replyCount, setReplyCount] = useState<number>(0);
 
     const fetchDoctors = async () => {
         setLoading(true);
@@ -54,8 +54,24 @@ export default function DoctorsScreen() {
         }
     };
 
+    // Fetch number of replies for AppStatus (update table and condition as needed)
+    const fetchReplyCount = async () => {
+        try {
+            const { count, error } = await supabase
+                .from('AppStatusReplies') // your table for replies
+                .select('id', { count: 'exact', head: true }) // count only
+                .eq('is_read', false); // example filter for unread replies
+
+            if (error) throw error;
+            setReplyCount(count || 0);
+        } catch (err: any) {
+            console.log('Error fetching reply count:', err.message);
+        }
+    };
+
     useEffect(() => {
         fetchDoctors();
+        fetchReplyCount();
     }, []);
 
     const handleBookAppointment = (doctor: Doctor) => {
@@ -93,9 +109,22 @@ export default function DoctorsScreen() {
             <View style={tw`flex-row justify-between items-center px-4 py-3`}>
                 <Entypo name="menu" size={24} color="black" />
                 <Text style={tw`text-lg font-semibold`}>Doctors</Text>
-                <Ionicons name="notifications-outline" size={24} color="black" />
+                <View style={tw`relative`}>
+                    <Link href="/AppStatus" asChild>
+                        <TouchableOpacity>
+                            <Ionicons name="notifications-outline" size={28} color="black" />
+
+
+                            <Text style={tw`text-black text-xs font-bold`}>
+                                Appointment status
+                            </Text>
+
+                        </TouchableOpacity>
+                    </Link>
+                </View>
             </View>
 
+            {/* Doctor List */}
             <ScrollView style={tw`px-4`} showsVerticalScrollIndicator={false}>
                 <Text style={tw`font-semibold text-base mb-4`}>Available Doctors</Text>
 
@@ -118,9 +147,6 @@ export default function DoctorsScreen() {
                                 <Text style={tw`text-xs text-gray-500`}>
                                     {doctor.Specialization}
                                 </Text>
-
-
-
                             </View>
                         </View>
                         <TouchableOpacity
@@ -133,13 +159,12 @@ export default function DoctorsScreen() {
                 ))}
             </ScrollView>
 
-
+            {/* Footer */}
             <View style={tw`absolute bottom-0 left-0 right-0 pb-2`}>
                 <Footer />
             </View>
         </SafeAreaView>
     );
 }
-
 
 
