@@ -5,12 +5,13 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { Link } from 'expo-router';
 
-
 export default function FeatureBar() {
     return (
         <View style={tw`w-full`}>
             <View style={tw`bg-[#063440] rounded-2xl px-2 py-4 flex-row justify-around`}>
-                <Link href='/Doctors' asChild>
+
+                {/* Doctors is now inside drawer folder */}
+                <Link href='/Drawer/Doctors' asChild>
                     <TouchableOpacity style={tw`items-center w-1/5`}>
                         <MaterialCommunityIcons name="notebook-outline" size={26} color="white" />
                         <Text style={tw`text-white text-xs mt-2 text-center`}>Pregnancy Assist</Text>
@@ -37,10 +38,8 @@ export default function FeatureBar() {
                         <Text style={tw`text-white text-xs mt-2 text-center`}>Maternal loans</Text>
                     </TouchableOpacity>
                 </Link>
-                {/* FIX: Added missing closing </Link> tag here */}
 
             </View>
         </View>
     );
 }
-
