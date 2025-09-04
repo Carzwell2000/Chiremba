@@ -1,10 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
-
 const supabaseUrl = "https://erpuslyknuetnqlehynl.supabase.co";
-const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVycHVzbHlrbnVldG5xbGVoeW5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg3ODMxMDUsImV4cCI6MjA2NDM1OTEwNX0.f1ubCigkh9u2ehWPeB_j4RyB5GEC70jHbl7T8NLnRdA"; // Use full anon key
+const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVycHVzbHlrbnVldG5xbGVoeW5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg3ODMxMDUsImV4cCI6MjA2NDM1OTEwNX0.f1ubCigkh9u2ehWPeB_j4RyB5GEC70jHbl7T8NLnRdA";
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -16,13 +14,11 @@ import {
     Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons, Entypo } from '@expo/vector-icons';
-import { Link } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import tw from 'twrnc';
 import Footer from '../Components/Footer';
-import { useNavigation, NavigationProp, DrawerActions } from '@react-navigation/native';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/types';
-
 
 type Doctor = {
     id: string;
@@ -82,27 +78,48 @@ export default function DoctorsScreen() {
         });
     };
 
+    const header = (
+        <View style={tw`flex-row justify-between items-center px-4 py-3 bg-white shadow-md`}>
+            <Text style={tw`text-lg font-bold text-teal-900`}>Doctors</Text>
+            <TouchableOpacity
+                onPress={() => Alert.alert('Notifications', 'Navigate to notifications.')}
+                style={tw`relative`}
+            >
+                <Ionicons name="notifications-outline" size={28} color="#047857" />
+                {replyCount > 0 && (
+                    <View style={tw`absolute -top-1 -right-1 bg-red-500 rounded-full w-5 h-5 justify-center items-center`}>
+                        <Text style={tw`text-white text-xs font-bold`}>
+                            {replyCount}
+                        </Text>
+                    </View>
+                )}
+            </TouchableOpacity>
+        </View>
+    );
+
     if (loading) {
         return (
-            <SafeAreaView style={tw`flex-1 bg-white justify-center items-center`}>
-                <ActivityIndicator size="large" color="#047857" />
-                <Text style={tw`mt-2 text-gray-700`}>Loading doctors...</Text>
+            <SafeAreaView style={tw`flex-1 bg-gray-50 justify-center items-center`}>
+                {header}
+                <ActivityIndicator size="large" color="#047857" style={tw`mt-6`} />
+                <Text style={tw`mt-2 text-gray-600`}>Loading doctors...</Text>
             </SafeAreaView>
         );
     }
 
     if (error) {
         return (
-            <SafeAreaView style={tw`flex-1 bg-white justify-center items-center px-4`}>
+            <SafeAreaView style={tw`flex-1 bg-gray-50 justify-center items-center px-4`}>
+                {header}
                 <Text style={tw`text-red-600 text-center text-lg mb-4`}>
                     Oops! Something went wrong: {error}
                 </Text>
                 <TouchableOpacity
                     onPress={fetchDoctors}
-                    style={tw`bg-blue-500 px-5 py-2 rounded-lg`}
+                    style={tw`bg-teal-900 px-6 py-3 rounded-lg shadow`}
                 >
-                    <Text style={tw`text-white font-semibold`}>
-                        Retry Loading Doctors
+                    <Text style={tw`text-white font-semibold text-center`}>
+                        Retry
                     </Text>
                 </TouchableOpacity>
             </SafeAreaView>
@@ -110,66 +127,41 @@ export default function DoctorsScreen() {
     }
 
     return (
-        <SafeAreaView style={tw`flex-1 bg-white`}>
-            {/* Header */}
-            <View style={tw`flex-row justify-between items-center px-4 py-3`}>
-
-                <Text style={tw`text-lg font-semibold`}>Doctors</Text>
-                <View style={tw`relative`}>
-
-
-                    <Ionicons
-                        name="notifications-outline"
-                        size={28}
-                        color="black"
-                    />
-
-
-                </View>
-            </View>
-
-            {/* Doctor List */}
-            <ScrollView style={tw`px-4`} showsVerticalScrollIndicator={false}>
-                <Text style={tw`font-semibold text-base mb-4`}>
-                    Available Doctors
-                </Text>
-
+        <SafeAreaView style={tw`flex-1 bg-gray-50`}>
+            {header}
+            <ScrollView style={tw`px-4 mt-3`} showsVerticalScrollIndicator={false}>
                 {doctors.map((doctor) => (
                     <View
                         key={doctor.id}
-                        style={tw`flex-row items-center justify-between mb-4 pb-2 border-b border-gray-100`}
+                        style={tw`bg-white rounded-xl p-4 mb-4 shadow-md flex-row justify-between items-center`}
                     >
                         <View style={tw`flex-row items-center`}>
                             <View
-                                style={tw`w-12 h-12 bg-gray-500 rounded-lg mr-3 justify-center items-center`}
+                                style={tw`w-12 h-12 bg-teal-200 rounded-full mr-4 justify-center items-center`}
                             >
-                                <Text style={tw`text-white font-bold`}>
-                                    {doctor.FirstName?.charAt(0)}
-                                    {doctor.LastName?.charAt(0)}
+                                <Text style={tw`text-teal-900 font-bold`}>
+                                    {doctor.FirstName.charAt(0)}
+                                    {doctor.LastName.charAt(0)}
                                 </Text>
                             </View>
                             <View>
-                                <Text style={tw`font-bold`}>
+                                <Text style={tw`text-lg font-semibold text-gray-800`}>
                                     Dr. {doctor.FirstName} {doctor.LastName}
                                 </Text>
-                                <Text style={tw`text-xs text-gray-500`}>
+                                <Text style={tw`text-sm text-gray-500`}>
                                     {doctor.Specialization}
                                 </Text>
                             </View>
                         </View>
                         <TouchableOpacity
-                            style={tw`bg-teal-900 px-4 py-2 rounded-lg`}
+                            style={tw`bg-teal-900 px-4 py-2 rounded-lg shadow`}
                             onPress={() => handleBookAppointment(doctor)}
                         >
-                            <Text style={tw`text-white text-xs`}>
-                                Book Appointment
-                            </Text>
+                            <Text style={tw`text-white font-semibold text-sm`}>Book</Text>
                         </TouchableOpacity>
                     </View>
                 ))}
             </ScrollView>
-
-            {/* Footer */}
             <View style={tw`absolute bottom-0 left-0 right-0 pb-2`}>
                 <Footer />
             </View>
